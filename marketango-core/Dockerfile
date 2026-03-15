@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies first (better layer caching)
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy source
 COPY . .
@@ -14,4 +14,4 @@ RUN mkdir -p logs
 
 EXPOSE 3000
 
-CMD ["node", "src/server.js"]
+CMD ["node", "src/app.js"]
