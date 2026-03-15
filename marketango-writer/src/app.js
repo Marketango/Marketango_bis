@@ -31,6 +31,11 @@ app.use(express.urlencoded({ extended: false }));
 // General rate limiter
 app.use(generalLimiter);
 
+// Root
+app.get('/', (req, res) => {
+  res.json({ service: 'marketango-writer', status: 'ok', api: '/api/v1' });
+});
+
 // API routes
 app.use('/api/v1', routes);
 
