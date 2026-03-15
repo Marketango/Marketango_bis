@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const config = require('../config');
@@ -12,6 +13,9 @@ const app = express();
 
 // Trust nginx reverse proxy
 app.set('trust proxy', 1);
+
+// Static frontend
+app.use(express.static(path.join(__dirname, '../public')));
 
 // CORS — whitelist from config
 app.use(
