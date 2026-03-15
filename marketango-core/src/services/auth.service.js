@@ -8,13 +8,13 @@ const UserModel = require('../models/user.model');
 const BCRYPT_ROUNDS = 12;
 
 function signAccessToken(user) {
-  return jwt.sign({ id: user.id, role: user.role }, config.jwt.secret, {
+  return jwt.sign({ id: user.id, role: user.role, email: user.email }, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn,
   });
 }
 
 function signRefreshToken(user) {
-  return jwt.sign({ id: user.id, role: user.role }, config.jwt.secret, {
+  return jwt.sign({ id: user.id, role: user.role, email: user.email }, config.jwt.secret, {
     expiresIn: config.jwt.refreshExpiresIn,
   });
 }
