@@ -1,6 +1,7 @@
 'use strict';
 
 const AuthService = require('../services/auth.service');
+const UserModel = require('../models/user.model');
 const { success, error } = require('../utils/response');
 const logger = require('../utils/logger');
 
@@ -40,4 +41,17 @@ function logout(req, res) {
   return success(res, { message: 'Logged out successfully' });
 }
 
-module.exports = { register, login, refresh, logout };
+async function me(req, res) {
+  try {
+    const user = await UserModel.findById(req.user.id);
+    if (!user || user.status === 'inactive') {
+      return error(res, 'User not found or inactive', 401);
+    }
+    return success(res, { user: { id: user.id, email: user.email, role: user.role } });
+  } catch (err) {
+    logger.error('Me error:', err);
+    return error(res, err.message, 500);
+  }
+}
+
+module.exports = { register, login, refresh, logout, me };

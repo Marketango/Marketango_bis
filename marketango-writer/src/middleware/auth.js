@@ -1,33 +1,41 @@
 'use strict';
 
-const jwt = require('jsonwebtoken');
 const config = require('../../config');
 const { error } = require('../utils/response');
 
 /**
- * authMiddleware — verifica el JWT emitido por el Core localmente.
- * No realiza ninguna petición HTTP al Core; la firma se valida de forma
- * matemática usando la JWT_SECRET compartida. Esto elimina latencia y
- * evita sobrecargar el Core con cada request.
+ * authenticate — valida el JWT llamando al Core (auth.agencia.com).
+ *
+ * El Core verifica la firma del token Y consulta la DB para confirmar
+ * que el usuario existe y está activo. Esto garantiza que cualquier
+ * cambio de estado (desactivación, cambio de rol) se refleja de
+ * inmediato en todos los servicios sin esperar que expire el JWT.
  *
  * Inyecta en req.user: { id, role, email }
  */
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return error(res, 'Authentication required', 401);
   }
 
   const token = authHeader.split(' ')[1];
+
   try {
-    const decoded = jwt.verify(token, config.jwt.secret);
-    req.user = { id: decoded.id, role: decoded.role, email: decoded.email };
-    next();
-  } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return error(res, 'Token expired', 401);
+    const response = await fetch(`${config.coreApiUrl}/api/v1/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const body = await response.json();
+
+    if (!response.ok) {
+      return error(res, body.message || 'Authentication failed', response.status);
     }
-    return error(res, 'Invalid token', 401);
+
+    req.user = body.data.user;
+    next();
+  } catch {
+    return error(res, 'Authentication service unavailable', 503);
   }
 }
 
