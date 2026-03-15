@@ -1,8 +1,16 @@
 services:
   writer:
     build: .
+    container_name: marketango-writer
     ports:
       - "4000:4000"
     env_file:
       - .env
     restart: unless-stopped
+    networks:
+      - marketango
+
+networks:
+  marketango:
+    external: true
+    name: marketango_marketango
