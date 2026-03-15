@@ -10,6 +10,9 @@ const { error } = require('./utils/response');
 
 const app = express();
 
+// Trust nginx reverse proxy
+app.set('trust proxy', 1);
+
 // CORS — whitelist from config
 app.use(
   cors({
